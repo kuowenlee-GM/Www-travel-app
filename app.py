@@ -36,7 +36,7 @@ with st.sidebar:
 
 # --- 3、主介面顯示 ---
 if st.session_state.auth_mode == 'Private':
-    st.title("❤️ 樂樂成長時光機")
+    st.title("🦔 樂樂時光機")
     st.markdown("*「 親愛的，記得把對我的思念帶上。 」*")
     
     # 新增權限區
