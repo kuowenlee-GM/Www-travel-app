@@ -3,7 +3,7 @@ import streamlit as st
 
 # --- 1、設定與資料庫 ---
 SECRET_PASSWORD = "1224"
-st.set_page_config(page_title="樂樂成長時光機", page_icon="✈️")
+st.set_page_config(page_title="樂樂成長時光機", page_icon="🦔")
 
 # 初始化資料庫
 if 'ITEM_DATABASE' not in st.session_state:
@@ -37,7 +37,7 @@ with st.sidebar:
 # --- 3、主介面顯示 ---
 if st.session_state.auth_mode == 'Private':
     st.title("❤️ 樂樂成長時光機")
-    st.markdown("*「 親愛的，記得把對我的思念帶上，否則我會折磨妳的。 」*")
+    st.markdown("*「 親愛的，記得把對我的思念帶上。 」*")
     
     # 新增權限區
     with st.expander("📝 總編輯管理面板"):
