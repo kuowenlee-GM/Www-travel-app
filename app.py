@@ -3,7 +3,9 @@ import streamlit as st
 
 # --- 1、設定與資料庫 ---
 SECRET_PASSWORD = "1224"
+st.set_page_config(page_title="樂樂成長時光機", page_icon="✈️")
 
+# 初始化資料庫
 if 'ITEM_DATABASE' not in st.session_state:
     st.session_state.ITEM_DATABASE = {
         "國內": {
@@ -21,9 +23,7 @@ if 'ITEM_DATABASE' not in st.session_state:
         }
     }
 
-# --- 2、介面設計與權限 ---
-st.set_page_config(page_title="樂樂成長時光機", page_icon="✈️")
-
+# --- 2、安全與權限系統 ---
 if 'auth_mode' not in st.session_state:
     st.session_state.auth_mode = 'Public'
 
@@ -32,16 +32,14 @@ with st.sidebar:
     password_input = st.text_input("輸入私密密碼", type="password")
     if password_input == SECRET_PASSWORD:
         st.session_state.auth_mode = 'Private'
-        st.success("私密模式已開啟")
-    elif password_input != "":
-        st.error("密碼錯誤，請重新輸入")
+        st.success("總編輯權限已開啟")
 
-# 標題顯示
+# --- 3、主介面顯示 ---
 if st.session_state.auth_mode == 'Private':
-    st.title("❤️ 專屬於我的小壞蛋之打包清單")
+    st.title("❤️ 樂樂成長時光機")
     st.markdown("*「 親愛的，記得把對我的思念帶上，否則我會折磨妳的。 」*")
     
-    # 總編輯權限：新增物品
+    # 新增權限區
     with st.expander("📝 總編輯管理面板"):
         new_item = st.text_input("想給樂樂新增什麼寶貝？")
         c1, c2 = st.columns(2)
@@ -50,14 +48,16 @@ if st.session_state.auth_mode == 'Private':
         if st.button("確認新增"):
             if new_item:
                 st.session_state.ITEM_DATABASE[dest].setdefault(scen, []).append(new_item)
-                st.success(f"成功將 '{new_item}' 加到 '{dest}-{scen}' 清單！")
+                st.balloons() # 氣球飛起來！
+                st.success(f"成功新增 '{new_item}' 到 '{dest}-{scen}'！")
 else:
-    st.title("✈️ 專業旅遊行李管理系統")
+    st.title("✈️ 樂樂成長時光機")
+    st.markdown("請輸入密碼解鎖總編輯權限")
 
-# --- 3、清單邏輯與顯示 ---
+# --- 4、清單邏輯與選擇 ---
 col1, col2 = st.columns(2)
 dest_type = col1.selectbox("選擇目的地", ["國內", "國外"])
-scene = col2.selectbox("選擇場景", ["民宿", "沙灘", "動物園/逛街", "爬山", "通用必備"])
+scene = col2.selectbox("選擇場景", list(st.session_state.ITEM_DATABASE[dest_type].keys()))
 
 target_items = st.session_state.ITEM_DATABASE[dest_type].get(scene, [])
 if dest_type == "國外" and scene != "通用必備":
@@ -68,5 +68,4 @@ for item in target_items:
     st.checkbox(item)
 
 if st.button("準備出發 !"):
-    st.balloons()
-    st.success("檢查完畢，祝您旅途愉快 !")
+    st.success("檢查完畢，祝樂樂旅途愉快 !")
