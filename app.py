@@ -48,10 +48,10 @@ if st.session_state.auth_mode == 'Private':
         if st.button("確認新增"):
             if new_item:
                 st.session_state.ITEM_DATABASE[dest].setdefault(scen, []).append(new_item)
-                st.balloons() # 氣球飛起來！
+                st.balloons() # 氣球慢慢飛起來！
                 st.success(f"成功新增 '{new_item}' 到 '{dest}-{scen}'！")
 else:
-    st.title("✈️ 樂樂成長時光機")
+    st.title("🦔 旅遊時光機")
     st.markdown("請輸入密碼解鎖總編輯權限")
 
 # --- 4、清單邏輯與選擇 ---
@@ -68,4 +68,4 @@ for item in target_items:
     st.checkbox(item)
 
 if st.button("準備出發 !"):
-    st.success("檢查完畢，祝樂樂旅途愉快 !")
+    st.success("檢查完畢，祝旅途愉快 !")
