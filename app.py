@@ -2,7 +2,7 @@
 import streamlit as st
 
 # --- 1、安全設定與密碼 ---
-SECRET_PASSWORD = "Mylove123"
+SECRET_PASSWORD = "1224"
 
 # --- 2、物品資料庫 ---
 ITEM_DATABASE = {
