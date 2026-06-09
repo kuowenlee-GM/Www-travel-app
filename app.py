@@ -48,7 +48,7 @@ if st.session_state.auth_mode == 'Private':
         if st.button("確認新增"):
             if new_item:
                 st.session_state.ITEM_DATABASE[dest].setdefault(scen, []).append(new_item)
-                st.balloons() # 氣球慢慢飛起來！
+                st.balloons() # 馬卡龍顏色氣球很慢飛起來！
                 st.success(f"成功新增 '{new_item}' 到 '{dest}-{scen}'！")
 else:
     st.title("🦔 旅遊時光機")
