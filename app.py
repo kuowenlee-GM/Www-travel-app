@@ -36,7 +36,7 @@ st.set_page_config(page_title="旅遊時光機", page_icon="🦔")
 if 'ITEM_DATABASE' not in st.session_state:
     st.session_state.ITEM_DATABASE = load_data()
 
-# --- 2、權限系統 ---
+# --- 2、權限與側邊欄 ---
 if 'auth_mode' not in st.session_state:
     st.session_state.auth_mode = 'Public'
 
@@ -45,6 +45,7 @@ with st.sidebar:
     password_input = st.text_input("輸入私密密碼", type="password")
     if password_input == SECRET_PASSWORD:
         st.session_state.auth_mode = 'Private'
+    st.divider()
     st.write("🔧 維護員：老公")
 
 # --- 3、主介面與總編輯面板 ---
@@ -63,7 +64,7 @@ if st.session_state.auth_mode == 'Private':
                 st.balloons()
                 st.success(f"成功新增 '{new_item}'！")
 
-# --- 4、清單顯示 (複選邏輯) ---
+# --- 4、清單顯示 (複選與唯一 ID 邏輯) ---
 col1, col2 = st.columns(2)
 dest_type = col1.selectbox("選擇目的地", ["國內", "國外"])
 selected_scenes = col2.multiselect("選擇場景 (可複選)", list(st.session_state.ITEM_DATABASE[dest_type].keys()))
@@ -75,69 +76,13 @@ for scene in selected_scenes:
         target_items.extend(st.session_state.ITEM_DATABASE["國外"]["通用必備"])
     target_items.extend(items)
 
-target_items = list(set(target_items)) # 去除重複
+# 去除重複
+unique_items = []
+[unique_items.append(x) for x in target_items if x not in unique_items]
 
 st.subheader(f"✅ 綜合打包清單")
-for item in target_items:
-    st.checkbox(item)
+for i, item in enumerate(unique_items):
+    st.checkbox(item, key=f"{item}_{i}") 
 
 if st.button("準備出發 !"):
     st.success("清單合併完成！總編輯大人，我們準備出發囉！")
-
-    items = st.session_state.ITEM_DATABASE[dest_type].get(scene, [])
-    if dest_type == "國外" and scene != "通用必備" and "通用必備" not in selected_scenes:
-        target_items.extend(st.session_state.ITEM_DATABASE["國外"]["通用必備"])
-    target_items.extend(items)
-
-target_items = list(set(target_items)) # 去除重複
-
-st.subheader(f"✅ 綜合打包清單")
-for item in target_items:
-    st.checkbox(item)
-
-if st.button("準備出發 !"):
-    st.success("清單合併完成！總編輯大人，我們準備出發囉！")
-
-
-with st.sidebar:
-    st.title("⚙️ 系統設定")
-    password_input = st.text_input("輸入私密密碼", type="password")
-    if password_input == SECRET_PASSWORD:
-        st.session_state.auth_mode = 'Private'
-        st.success("總編輯權限已開啟")
-    st.divider()
-    st.write("🔧 維護員：老公")
-
-# --- 3、主介面與總編輯面板 ---
-st.title("🦔 樂樂時光機")
-
-if st.session_state.auth_mode == 'Private':
-    with st.expander("📝 總編輯管理面板"):
-        new_item = st.text_input("想給樂樂新增什麼寶貝？")
-        c1, c2 = st.columns(2)
-        dest = c1.selectbox("目的地", ["國內", "國外"])
-        scen = c2.selectbox("場景", list(st.session_state.ITEM_DATABASE[dest].keys()))
-        
-        if st.button("確認新增"):
-            if new_item:
-                st.session_state.ITEM_DATABASE[dest][scen].append(new_item)
-                save_data(st.session_state.ITEM_DATABASE) # 關鍵：寫入檔案！
-                st.balloons()
-                st.success(f"成功新增 '{new_item}'！已永久保存。")
-
-# --- 4、清單顯示 ---
-col1, col2 = st.columns(2)
-dest_type = col1.selectbox("選擇目的地", ["國內", "國外"])
-scene = col2.selectbox("選擇場景", list(st.session_state.ITEM_DATABASE[dest_type].keys()))
-
-target_items = st.session_state.ITEM_DATABASE[dest_type].get(scene, [])
-if dest_type == "國外" and scene != "通用必備":
-    target_items = st.session_state.ITEM_DATABASE["國外"]["通用必備"] + target_items
-
-st.subheader(f"✅ {dest_type} - {scene} 必備清單")
-for item in target_items:
-    st.checkbox(item)
-
-if st.button("準備出發 !"):
-    st.success("檢查完畢，祝旅途愉快！")
-
