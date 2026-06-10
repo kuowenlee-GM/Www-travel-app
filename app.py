@@ -4,7 +4,6 @@ import os
 
 DATA_FILE = "lele_storage.json"
 
-# --- 核心數據管理 ---
 def load_data():
     default_data = {
         "國內": {"民宿": ["刷牙組", "睡衣", "室內拖鞋", "充電線", "延長線", "個人護膚品"], 
@@ -30,19 +29,17 @@ if 'ITEM_DATABASE' not in st.session_state:
 # --- 側邊欄：總編輯管理中心 ---
 with st.sidebar:
     st.title("🛠 總編輯設定")
-    st.write("維護員老公專屬")
-    
     with st.expander("➕ 新增樂樂小物"):
-        new_dest = st.selectbox("選擇目的地", ["國內", "國外"])
-        new_scene = st.text_input("輸入場景名稱")
-        new_item = st.text_input("輸入要新增的物品")
+        new_dest = st.selectbox("目的地", ["國內", "國外"])
+        new_scene = st.text_input("場景名稱")
+        new_item = st.text_input("物品名稱")
         if st.button("確認加入資料庫"):
             if new_scene and new_item:
                 if new_scene not in st.session_state.ITEM_DATABASE[new_dest]:
                     st.session_state.ITEM_DATABASE[new_dest][new_scene] = []
                 st.session_state.ITEM_DATABASE[new_dest][new_scene].append(new_item)
                 save_data(st.session_state.ITEM_DATABASE)
-                st.success(f"已將 {new_item} 加入 {new_scene}!")
+                st.success(f"已加入: {new_item}")
                 st.rerun()
 
 # --- 主畫面：打包 ---
@@ -54,9 +51,21 @@ checked_items = []
 for scene in selected_scenes:
     st.subheader(f"📍 {scene}")
     items = st.session_state.ITEM_DATABASE[dest_type].get(scene, [])
-    for item in items:
-        if st.checkbox(f"{item}", key=f"pack_{scene}_{item}"):
+    for idx, item in enumerate(items):
+        # 使用索引(idx)來確保每個key都是世界唯一
+        if st.checkbox(f"{item}", key=f"{dest_type}_{scene}_{idx}"):
             checked_items.append(item)
 
-# 儲存與歷史展示 (同之前的穩定版...)
-# (為了縮短回應長度，請保留妳原本那段穩定的歷史存檔邏輯即可)
+# 歷史紀錄儲存邏輯 (保持與之前相同的穩定版)
+st.divider()
+st.subheader("💾 旅程存檔")
+trip_name = st.text_input("旅程名稱")
+if st.button("儲存此次清單"):
+    if trip_name and checked_items:
+        st.session_state.ITEM_DATABASE["歷史紀錄"][trip_name] = {
+            "scenes": selected_scenes,
+            "checked_items": checked_items
+        }
+        save_data(st.session_state.ITEM_DATABASE)
+        st.success("存檔成功！")
+        st.rerun()
