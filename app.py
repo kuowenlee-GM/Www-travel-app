@@ -57,7 +57,7 @@ selected_scenes = st.multiselect("選擇場景", list(st.session_state.ITEM_DATA
 
 checked_items = []
 for scene in selected_scenes:
-    st.subheader(f"📍 {scene}")
+    st.subheader(f"⭐️ {scene}")
     items = st.session_state.ITEM_DATABASE[dest_type].get(scene, [])
     for idx, item in enumerate(items):
         if st.checkbox(f"{item}", key=f"{dest_type}_{scene}_{idx}"):
