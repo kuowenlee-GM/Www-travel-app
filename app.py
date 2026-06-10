@@ -64,24 +64,23 @@ if st.session_state.auth_mode == 'Private':
                 st.balloons()
                 st.success(f"成功新增 '{new_item}'！")
 
-# --- 4、清單顯示 (乾淨版) ---
-col1, col2 = st.columns(2)
-dest_type = col1.selectbox("選擇目的地", ["國內", "國外"])
-selected_scenes = col2.multiselect("選擇場景 (可複選)", list(st.session_state.ITEM_DATABASE[dest_type].keys()))
+# --- 4、分組顯示邏輯 (總編輯專業打包版) ---
+dest_type = st.selectbox("選擇目的地", ["國內", "國外"])
+selected_scenes = st.multiselect("選擇場景 (可複選)", list(st.session_state.ITEM_DATABASE[dest_type].keys()))
 
-target_items = []
+# 根據選的場景，一個一個分組顯示
 for scene in selected_scenes:
+    st.subheader(f"📍 {scene} 分區裝袋清單")
     items = st.session_state.ITEM_DATABASE[dest_type].get(scene, [])
-    if dest_type == "國外" and scene != "通用必備" and "通用必備" not in selected_scenes:
-        target_items.extend(st.session_state.ITEM_DATABASE["國外"]["通用必備"])
-    target_items.extend(items)
+    
+    # 如果是國外，且選了非通用必備，自動把通用必備掛在第一個場景下
+    if dest_type == "國外" and scene == selected_scenes[0] and "通用必備" not in selected_scenes:
+        items = st.session_state.ITEM_DATABASE["國外"]["通用必備"] + items
+    
+    # 分區渲染 checkbox
+    for i, item in enumerate(items):
+        st.checkbox(f"{item}", key=f"{scene}_{item}_{i}")
 
-# 去除重複並排序
-unique_items = sorted(list(set(target_items)))
-
-st.subheader(f"✅ 綜合打包清單")
-for i, item in enumerate(unique_items):
-    st.checkbox(item, key=f"{item}_{i}") 
-
+st.divider()
 if st.button("準備出發 !"):
-    st.success("清單合併完成！總編輯大人，我們準備出發囉！")
+    st.success("總編輯大人，所有分區檢查完畢，我們隨時可以出發！")
