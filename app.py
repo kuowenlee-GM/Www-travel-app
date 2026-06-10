@@ -7,18 +7,11 @@ SECRET_PASSWORD = "Mylove123"
 
 st.set_page_config(page_title="樂樂時光機", page_icon="🦔")
 
-# --- 數據管理 ---
+# --- 數據管理 (加入防禦性結構修復) ---
 def load_data():
-    # 擴充後的資料庫結構
     default_data = {
-        "國內": {
-            "民宿": ["刷牙組", "睡衣", "室內拖鞋", "充電線"],
-            "沙灘": ["泳衣", "防曬乳", "拖鞋", "遮陽帽"]
-        },
-        "國外": {
-            "通用必備": ["護照", "轉換插頭"],
-            "民宿": ["刷牙組", "睡衣"]
-        },
+        "國內": {"民宿": ["刷牙組", "睡衣", "室內拖鞋", "充電線"], "沙灘": ["泳衣", "防曬乳", "拖鞋", "遮陽帽"]},
+        "國外": {"通用必備": ["護照", "轉換插頭"], "民宿": ["刷牙組", "睡衣"]},
         "季節物品": {
             "春季": ["薄外套", "雨傘"],
             "夏季": ["墨鏡", "防曬噴霧", "手持電風扇"],
@@ -27,10 +20,17 @@ def load_data():
         },
         "歷史紀錄": {}
     }
+    
     if os.path.exists(DATA_FILE):
         try:
             with open(DATA_FILE, "r", encoding="utf-8") as f:
-                return json.load(f)
+                data = json.load(f)
+                # 確保讀取到的資料包含所有必要的鍵，否則補上預設值
+                if not isinstance(data, dict): return default_data
+                for key in default_data:
+                    if key not in data:
+                        data[key] = default_data[key]
+                return data
         except: return default_data
     return default_data
 
@@ -53,8 +53,15 @@ with st.sidebar:
         new_season = st.selectbox("選擇季節", ["春季", "夏季", "秋季", "冬季"])
         new_item = st.text_input("物品名稱")
         if st.button("確認加入"):
+            # 確保季節物品存在
+            if "季節物品" not in st.session_state.ITEM_DATABASE:
+                st.session_state.ITEM_DATABASE["季節物品"] = {}
+            if new_season not in st.session_state.ITEM_DATABASE["季節物品"]:
+                st.session_state.ITEM_DATABASE["季節物品"][new_season] = []
+            
             st.session_state.ITEM_DATABASE["季節物品"][new_season].append(new_item)
             save_data(st.session_state.ITEM_DATABASE)
+            st.toast(f"已加入: {new_item}")
             st.rerun()
 
 # --- 主畫面 ---
@@ -67,10 +74,11 @@ with col1: dest = st.selectbox("目的地", ["國內", "國外"])
 with col2: scene = st.selectbox("場景", list(st.session_state.ITEM_DATABASE.get(dest, {}).keys()))
 with col3: season = st.selectbox("季節", ["春季", "夏季", "秋季", "冬季"])
 
-# --- 生成清單邏輯 (合併場景與季節) ---
+# --- 生成清單邏輯 ---
 base_items = st.session_state.ITEM_DATABASE[dest].get(scene, [])
-seasonal_items = st.session_state.ITEM_DATABASE["季節物品"].get(season, [])
-final_list = list(set(base_items + seasonal_items)) # 合併並去重
+# 安全讀取季節物品，如果沒有該季節則回傳空列表
+seasonal_items = st.session_state.ITEM_DATABASE.get("季節物品", {}).get(season, [])
+final_list = list(set(base_items + seasonal_items))
 
 st.subheader(f"✅ 此次打包清單 ({dest} / {scene} / {season})")
 
@@ -80,11 +88,16 @@ for idx, item in enumerate(final_list):
         checked_items.append(item)
 
 # --- 歷史存檔 ---
+st.divider()
+st.subheader("💾 旅程存檔")
+trip_name = st.text_input("給這次旅程取個名字")
 if st.button("儲存打包清單"):
-    trip_name = st.text_input("旅程名稱")
-    if trip_name:
+    if trip_name and checked_items:
+        if "歷史紀錄" not in st.session_state.ITEM_DATABASE:
+            st.session_state.ITEM_DATABASE["歷史紀錄"] = {}
         st.session_state.ITEM_DATABASE["歷史紀錄"][trip_name] = {
             "scenes": [scene], "checked_items": checked_items
         }
         save_data(st.session_state.ITEM_DATABASE)
         st.success("存檔成功！")
+        st.rerun()
