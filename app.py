@@ -85,7 +85,7 @@ if isinstance(history, dict) and history:
             for item in data.get("checked_items", []):
                 st.markdown(f"- ✅ {item}")
         
-        if st.button("🗑️ 刪除這筆紀錄", key=f"del_{name}"):
+        if st.button("🗑️ 刪除這筆紀錄",放在垃圾桶圖案及功能放在最右邊 key=f"del_{name}"):
             del st.session_state.ITEM_DATABASE["歷史紀錄"][name]
             save_data(st.session_state.ITEM_DATABASE)
             st.rerun()
