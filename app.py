@@ -1,4 +1,3 @@
-# Www-travel-app
 import streamlit as st
 import json
 import os
@@ -71,6 +70,20 @@ selected_scenes = col2.multiselect("選擇場景 (可複選)", list(st.session_s
 
 target_items = []
 for scene in selected_scenes:
+    items = st.session_state.ITEM_DATABASE[dest_type].get(scene, [])
+    if dest_type == "國外" and scene != "通用必備" and "通用必備" not in selected_scenes:
+        target_items.extend(st.session_state.ITEM_DATABASE["國外"]["通用必備"])
+    target_items.extend(items)
+
+target_items = list(set(target_items)) # 去除重複
+
+st.subheader(f"✅ 綜合打包清單")
+for item in target_items:
+    st.checkbox(item)
+
+if st.button("準備出發 !"):
+    st.success("清單合併完成！總編輯大人，我們準備出發囉！")
+
     items = st.session_state.ITEM_DATABASE[dest_type].get(scene, [])
     if dest_type == "國外" and scene != "通用必備" and "通用必備" not in selected_scenes:
         target_items.extend(st.session_state.ITEM_DATABASE["國外"]["通用必備"])
