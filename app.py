@@ -85,15 +85,6 @@ for item in target_items:
 if st.button("準備出發 !"):
     st.success("清單合併完成！總編輯大人，我們準備出發囉！")
 
-st.set_page_config(page_title="旅遊時光機", page_icon="🦔")
-
-# 初始化資料
-if 'ITEM_DATABASE' not in st.session_state:
-    st.session_state.ITEM_DATABASE = load_data()
-
-# --- 2、安全與權限系統 ---
-if 'auth_mode' not in st.session_state:
-    st.session_state.auth_mode = 'Public'
 
 with st.sidebar:
     st.title("⚙️ 系統設定")
