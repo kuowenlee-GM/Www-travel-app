@@ -64,7 +64,7 @@ if st.session_state.auth_mode == 'Private':
                 st.balloons()
                 st.success(f"成功新增 '{new_item}'！")
 
-# --- 4、清單顯示 (複選與唯一 ID 邏輯) ---
+# --- 4、清單顯示 (乾淨版) ---
 col1, col2 = st.columns(2)
 dest_type = col1.selectbox("選擇目的地", ["國內", "國外"])
 selected_scenes = col2.multiselect("選擇場景 (可複選)", list(st.session_state.ITEM_DATABASE[dest_type].keys()))
@@ -76,9 +76,8 @@ for scene in selected_scenes:
         target_items.extend(st.session_state.ITEM_DATABASE["國外"]["通用必備"])
     target_items.extend(items)
 
-# 去除重複
-unique_items = []
-[unique_items.append(x) for x in target_items if x not in unique_items]
+# 去除重複並排序
+unique_items = sorted(list(set(target_items)))
 
 st.subheader(f"✅ 綜合打包清單")
 for i, item in enumerate(unique_items):
@@ -86,4 +85,3 @@ for i, item in enumerate(unique_items):
 
 if st.button("準備出發 !"):
     st.success("清單合併完成！總編輯大人，我們準備出發囉！")
-
