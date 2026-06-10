@@ -1,50 +1,109 @@
 import streamlit as st
+import json
+import os
 
-# 我們直接在程式裡寫死內容，不讀取任何檔案，保證不會有 KeyError
-data = {
-    "國內": {
-        "民宿": ["刷牙組", "睡衣", "室內拖鞋", "充電線", "個人護膚品"],
-        "沙灘": ["泳衣", "防曬乳", "拖鞋", "遮陽帽", "防水袋"]
-    },
-    "國外": {
-        "通用必備": ["護照"],
-        "民宿": ["刷牙組"]
-    },
-    "季節補強": {
-        "夏季": ["墨鏡", "防曬噴霧"],
-        "冬季": ["發熱衣", "暖暖包"]
+# --- 設定 ---
+DATA_FILE = "lele_storage.json"
+SECRET_PASSWORD = "Mylove123"
+
+st.set_page_config(page_title="樂樂時光機", page_icon="🦔")
+
+# --- 數據處理 ---
+def load_data():
+    default_data = {
+        "國內": {"民宿": ["刷牙組", "睡衣", "室內拖鞋", "充電線", "延長線", "個人護膚品"]},
+        "國外": {"通用必備": ["護照", "轉換插頭"], "民宿": ["刷牙組", "睡衣"]},
+        "歷史紀錄": {}
     }
-}
+    if os.path.exists(DATA_FILE):
+        try:
+            with open(DATA_FILE, "r", encoding="utf-8") as f:
+                data = json.load(f)
+                return data if isinstance(data, dict) else default_data
+        except: return default_data
+    return default_data
 
-st.title("🦔 樂樂清單 (純淨版)")
+def save_data(data):
+    with open(DATA_FILE, "w", encoding="utf-8") as f:
+        json.dump(data, f, ensure_ascii=False, indent=4)
 
-# 選擇目的地
-dest = st.selectbox("目的地", ["國內", "國外"])
+if 'ITEM_DATABASE' not in st.session_state:
+    st.session_state.ITEM_DATABASE = load_data()
+if 'auth_mode' not in st.session_state:
+    st.session_state.auth_mode = 'Public'
 
-# 選擇場景 (自動對應目的地)
-scenes = st.multiselect("選擇場景", list(data[dest].keys()))
+# --- 側邊欄 ---
+with st.sidebar:
+    st.title("⚙️ 系統設定")
+    password_input = st.text_input("輸入私密密碼", type="password")
+    if password_input == SECRET_PASSWORD:
+        st.session_state.auth_mode = 'Private'
+        st.success("私密模式已開啟")
+    
+    st.divider()
+    st.subheader("🛠 總編輯設定")
+    with st.expander("➕ 新增物品"):
+        new_dest = st.selectbox("目的地", ["國內", "國外"])
+        new_scene = st.text_input("場景名稱")
+        new_item = st.text_input("物品名稱")
+        if st.button("確認加入"):
+            if new_scene and new_item:
+                if new_scene not in st.session_state.ITEM_DATABASE[new_dest]:
+                    st.session_state.ITEM_DATABASE[new_dest][new_scene] = []
+                st.session_state.ITEM_DATABASE[new_dest][new_scene].append(new_item)
+                save_data(st.session_state.ITEM_DATABASE)
+                st.toast(f"已新增: {new_item}")
+                st.rerun()
 
-# 勾選項目
-checked = []
-for s in scenes:
-    st.subheader(f"📍 {s}")
-    for item in data[dest][s]:
-        if st.checkbox(item, key=f"base_{s}_{item}"):
-            checked.append(item)
-
-# 選擇季節
-season = st.selectbox("選擇季節", ["無", "夏季", "冬季"])
-if season != "無":
-    st.subheader(f"🍂 {season} 補強")
-    for item in data["季節補強"][season]:
-        if st.checkbox(f"季節: {item}", key=f"seas_{item}"):
-            checked.append(item)
-
-# 顯示最終清單 (直接顯示，不存檔)
-st.divider()
-st.subheader("✅ 你的打包清單")
-if checked:
-    for item in checked:
-        st.write(f"• {item}")
+# --- 主畫面 ---
+if st.session_state.auth_mode == 'Private':
+    st.title("❤️ 專屬於我的小壞蛋之打包清單")
 else:
-    st.write("目前尚未勾選任何物品")
+    st.title("🦔 樂樂時光機")
+
+dest_type = st.selectbox("選擇目的地", ["國內", "國外"])
+# 確保選擇場景時能讀取到正確的 keys
+scenes_available = list(st.session_state.ITEM_DATABASE.get(dest_type, {}).keys())
+selected_scenes = st.multiselect("選擇場景", scenes_available)
+
+checked_items = []
+for scene in selected_scenes:
+    st.subheader(f"📍 {scene}")
+    items = st.session_state.ITEM_DATABASE[dest_type].get(scene, [])
+    for idx, item in enumerate(items):
+        if st.checkbox(f"{item}", key=f"{dest_type}_{scene}_{item}_{idx}"):
+            checked_items.append(item)
+
+# --- 存檔與互動 ---
+st.divider()
+st.subheader("💾 旅程存檔")
+trip_name = st.text_input("幫這次旅程取個名字")
+if st.button("儲存此次打包清單"):
+    if trip_name and checked_items:
+        if "歷史紀錄" not in st.session_state.ITEM_DATABASE:
+            st.session_state.ITEM_DATABASE["歷史紀錄"] = {}
+        st.session_state.ITEM_DATABASE["歷史紀錄"][trip_name] = {
+            "scenes": selected_scenes,
+            "checked_items": checked_items
+        }
+        save_data(st.session_state.ITEM_DATABASE)
+        st.success("存檔成功！")
+        st.rerun()
+
+# --- 歷史紀錄 (加入格式檢查) ---
+st.subheader("📂 瀏覽歷史打包清單")
+history = st.session_state.ITEM_DATABASE.get("歷史紀錄", {})
+if isinstance(history, dict):
+    for name, data in history.items():
+        if isinstance(data, dict):  # 確保每一筆紀錄都是字典
+            with st.expander(f"📂 {name}"):
+                scenes_list = data.get('scenes', [])
+                st.write(f"**場景**: {', '.join(scenes_list) if isinstance(scenes_list, list) else '無'}")
+                items_list = data.get('checked_items', [])
+                if isinstance(items_list, list):
+                    for i in items_list:
+                        st.markdown(f"- ✅ {i}")
+                if st.button(f"🗑️ 刪除 {name}", key=f"del_{name}"):
+                    del st.session_state.ITEM_DATABASE["歷史紀錄"][name]
+                    save_data(st.session_state.ITEM_DATABASE)
+                    st.rerun()
