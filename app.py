@@ -84,3 +84,22 @@ for scene in selected_scenes:
 st.divider()
 if st.button("準備出發 !"):
     st.success("總編輯大人，所有分區檢查完畢，我們隨時可以出發！")
+
+# --- 5、歷史紀錄功能 ---
+st.divider()
+st.subheader("💾 旅程存檔")
+trip_name = st.text_input("幫這次旅程取個名字 (例如: 樂樂動物園日)")
+if st.button("儲存此次打包清單"):
+    if trip_name:
+        history = st.session_state.ITEM_DATABASE.get("歷史紀錄", {})
+        history[trip_name] = selected_scenes # 存下當時選了哪些場景
+        st.session_state.ITEM_DATABASE["歷史紀錄"] = history
+        save_data(st.session_state.ITEM_DATABASE)
+        st.success(f"紀錄已存入後台: {trip_name}")
+
+# 顯示歷史清單
+if "歷史紀錄" in st.session_state.ITEM_DATABASE:
+    with st.expander("📂 瀏覽歷史打包清單"):
+        for name, scenes in st.session_state.ITEM_DATABASE["歷史紀錄"].items():
+            st.write(f"📅 {name}: {', '.join(scenes)}")
+
