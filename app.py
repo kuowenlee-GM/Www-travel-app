@@ -14,10 +14,8 @@ def load_data():
         try:
             with open(DATA_FILE, "r", encoding="utf-8") as f:
                 data = json.load(f)
-                # --- 強制資料清洗 ---
                 if not isinstance(data, dict): return default_data
-                if "歷史紀錄" not in data or not isinstance(data["歷史紀錄"], dict):
-                    data["歷史紀錄"] = {}
+                if "歷史紀錄" not in data: data["歷史紀錄"] = {}
                 return data
         except: return default_data
     return default_data
@@ -44,17 +42,13 @@ for scene in selected_scenes:
         st.checkbox(f"{item}", key=f"pack_{scene}_{i}")
         if item not in all_items: all_items.append(item)
 
-# 3. 儲存紀錄
+# 3. 儲存紀錄 (這裡確保我們存入的是清單)
 st.divider()
 st.subheader("💾 旅程存檔")
 trip_name = st.text_input("幫這次旅程取個名字")
 
 if st.button("儲存此次打包清單"):
     if trip_name:
-        # 強制將歷史資料結構化為字典
-        if not isinstance(st.session_state.ITEM_DATABASE.get("歷史紀錄"), dict):
-            st.session_state.ITEM_DATABASE["歷史紀錄"] = {}
-            
         st.session_state.ITEM_DATABASE["歷史紀錄"][trip_name] = {
             "scenes": selected_scenes,
             "items": all_items
@@ -63,20 +57,23 @@ if st.button("儲存此次打包清單"):
         st.success("存檔成功！")
         st.rerun()
 
-# 4. 歷史清單展示 (終極容錯版)
+# 4. 歷史清單展示 (修正顯示邏輯)
 history = st.session_state.ITEM_DATABASE.get("歷史紀錄", {})
 if isinstance(history, dict) and history:
     st.subheader("📂 瀏覽歷史打包清單")
     for name, data in list(history.items()):
-        # 再次確保 data 是字典格式
         if not isinstance(data, dict): continue
         
-        cols = st.columns([4, 1])
-        with cols[0].expander(f"📂 {name}"):
-            st.write(f"**場景**: {', '.join(data.get('scenes', []))}")
-            st.write("**項目**: {', '.join(data.get('items', []))}")
+        # 修正顯示邏輯：確保這裡不會出現 join 語法的字串錯誤
+        with st.expander(f"📂 {name}"):
+            scenes_list = data.get("scenes", [])
+            items_list = data.get("items", [])
+            st.write(f"**場景**: {', '.join(scenes_list)}")
+            st.write("**清單內容**:")
+            for item in items_list:
+                st.markdown(f"- {item}")
         
-        if cols[1].button("🗑️", key=f"del_{name}"):
+        if st.button("🗑️ 刪除這筆紀錄", key=f"del_{name}"):
             del st.session_state.ITEM_DATABASE["歷史紀錄"][name]
             save_data(st.session_state.ITEM_DATABASE)
             st.rerun()
