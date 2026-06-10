@@ -1,5 +1,4 @@
-# Www-travel-app
-import streamlit as st
+# Www-travel-appimport streamlit as st
 import json
 import os
 
@@ -7,7 +6,6 @@ import os
 DATA_FILE = "lele_storage.json"
 SECRET_PASSWORD = "1224"
 
-# 載入資料庫函數
 def load_data():
     default_data = {
         "國內": {
@@ -29,10 +27,62 @@ def load_data():
             return json.load(f)
     return default_data
 
-# 儲存資料庫函數
 def save_data(data):
     with open(DATA_FILE, "w", encoding="utf-8") as f:
         json.dump(data, f, ensure_ascii=False, indent=4)
+
+st.set_page_config(page_title="旅遊時光機", page_icon="🦔")
+
+if 'ITEM_DATABASE' not in st.session_state:
+    st.session_state.ITEM_DATABASE = load_data()
+
+# --- 2、權限系統 ---
+if 'auth_mode' not in st.session_state:
+    st.session_state.auth_mode = 'Public'
+
+with st.sidebar:
+    st.title("⚙️ 系統設定")
+    password_input = st.text_input("輸入私密密碼", type="password")
+    if password_input == SECRET_PASSWORD:
+        st.session_state.auth_mode = 'Private'
+    st.write("🔧 維護員：老公")
+
+# --- 3、主介面與總編輯面板 ---
+st.title("🦔 樂樂時光機")
+
+if st.session_state.auth_mode == 'Private':
+    with st.expander("📝 總編輯管理面板"):
+        new_item = st.text_input("想給樂樂新增什麼寶貝？")
+        c1, c2 = st.columns(2)
+        dest = c1.selectbox("目的地", ["國內", "國外"])
+        scen = c2.selectbox("場景", list(st.session_state.ITEM_DATABASE[dest].keys()))
+        if st.button("確認新增"):
+            if new_item:
+                st.session_state.ITEM_DATABASE[dest][scen].append(new_item)
+                save_data(st.session_state.ITEM_DATABASE)
+                st.balloons()
+                st.success(f"成功新增 '{new_item}'！")
+
+# --- 4、清單顯示 (複選邏輯) ---
+col1, col2 = st.columns(2)
+dest_type = col1.selectbox("選擇目的地", ["國內", "國外"])
+selected_scenes = col2.multiselect("選擇場景 (可複選)", list(st.session_state.ITEM_DATABASE[dest_type].keys()))
+
+target_items = []
+for scene in selected_scenes:
+    items = st.session_state.ITEM_DATABASE[dest_type].get(scene, [])
+    if dest_type == "國外" and scene != "通用必備" and "通用必備" not in selected_scenes:
+        target_items.extend(st.session_state.ITEM_DATABASE["國外"]["通用必備"])
+    target_items.extend(items)
+
+target_items = list(set(target_items)) # 去除重複
+
+st.subheader(f"✅ 綜合打包清單")
+for item in target_items:
+    st.checkbox(item)
+
+if st.button("準備出發 !"):
+    st.success("清單合併完成！總編輯大人，我們準備出發囉！")
 
 st.set_page_config(page_title="旅遊時光機", page_icon="🦔")
 
