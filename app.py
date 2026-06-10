@@ -25,36 +25,29 @@ st.set_page_config(page_title="樂樂時光機", page_icon="🦔")
 if 'ITEM_DATABASE' not in st.session_state:
     st.session_state.ITEM_DATABASE = load_data()
 
-# --- 側邊欄 ---
-with st.sidebar:
-    st.title("⚙️ 總編輯管理")
-    password_input = st.text_input("密碼", type="password")
-    if password_input == SECRET_PASSWORD:
-        st.session_state.auth_mode = 'Private'
-    st.write("🔧 維護員：老公")
-
-# --- 主程式 ---
+# --- 1、主介面 ---
 st.title("🦔 樂樂時光機")
 dest_type = st.selectbox("目的地", ["國內", "國外"])
 selected_scenes = st.multiselect("選擇場景 (可複選)", list(st.session_state.ITEM_DATABASE[dest_type].keys()))
 
-# 整理所有項目(用於存檔)
-unique_items = []
-for s in selected_scenes:
-    for item in st.session_state.ITEM_DATABASE[dest_type].get(s, []):
-        if item not in unique_items: unique_items.append(item)
-
 # 顯示分區打包區
+unique_items = []
 for scene in selected_scenes:
     st.subheader(f"📍 {scene} 分區裝袋清單")
     items = st.session_state.ITEM_DATABASE[dest_type].get(scene, [])
     for i, item in enumerate(items):
         st.checkbox(f"{item}", key=f"pack_{scene}_{i}")
+        if item not in unique_items: unique_items.append(item)
 
-# --- 歷史紀錄中心 ---
+# 準備出發按鈕
+if st.button("準備出發 !"):
+    st.balloons()
+    st.success("總編輯大人，打包完成！準備出發囉！")
+
+# --- 2、歷史紀錄中心 ---
 st.divider()
 st.subheader("💾 旅程存檔中心")
-trip_name = st.text_input("幫這次旅程取個名字")
+trip_name = st.text_input("幫這次旅程取個名字 (用於存檔)")
 
 if st.button("儲存此次打包清單"):
     if trip_name:
@@ -72,13 +65,12 @@ if "歷史紀錄" in st.session_state.ITEM_DATABASE and st.session_state.ITEM_DA
     for name, data in st.session_state.ITEM_DATABASE["歷史紀錄"].items():
         c1, c2 = st.columns([4, 1]) 
         with c1.expander(f"📂 {name}"):
-            st.write(f"**場景**: {', '.join(data['scenes'])}")
+            st.write(f"**場景**: {', '.join(data.get('scenes', []))}")
             st.write("**清單內容**:")
-            for item in data['items']:
+            for item in data.get('items', []):
                 st.markdown(f"- {item}")
         if c2.button("🗑️", key=f"del_{name}"):
             del st.session_state.ITEM_DATABASE["歷史紀錄"][name]
             save_data(st.session_state.ITEM_DATABASE)
             st.rerun()
-
 
