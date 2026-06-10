@@ -85,7 +85,7 @@ st.divider()
 if st.button("準備出發 !"):
     st.success("總編輯大人，所有分區檢查完畢，我們隨時可以出發！")
 
-# --- 5、歷史紀錄功能 (加上互動功能) ---
+# --- 5、歷史紀錄功能 (升級為全紀錄模式) ---
 st.divider()
 st.subheader("💾 旅程存檔")
 trip_name = st.text_input("幫這次旅程取個名字")
@@ -94,17 +94,19 @@ if st.button("儲存此次打包清單"):
     if trip_name:
         if "歷史紀錄" not in st.session_state.ITEM_DATABASE:
             st.session_state.ITEM_DATABASE["歷史紀錄"] = {}
-        st.session_state.ITEM_DATABASE["歷史紀錄"][trip_name] = selected_scenes
+        # 關鍵修改：不只存場景，連當時的清單內容(target_items)一起存進去！
+        st.session_state.ITEM_DATABASE["歷史紀錄"][trip_name] = {
+            "scenes": selected_scenes,
+            "items": unique_items
+        }
         save_data(st.session_state.ITEM_DATABASE)
         st.success(f"紀錄已存入: {trip_name}")
 
 # 顯示可以點擊的歷史紀錄
 if "歷史紀錄" in st.session_state.ITEM_DATABASE and st.session_state.ITEM_DATABASE["歷史紀錄"]:
     st.subheader("📂 瀏覽歷史打包清單")
-    for name, scenes in st.session_state.ITEM_DATABASE["歷史紀錄"].items():
-        # 把每個歷史紀錄變成一個按鈕，點下去就知道當時選了什麼
+    for name, data in st.session_state.ITEM_DATABASE["歷史紀錄"].items():
         if st.button(f"查看: {name}"):
-            st.info(f"當時選的場景是: {', '.join(scenes)}")
-            st.write("下次出遊時，可以參照這些場景喔！")
-
-
+            st.info(f"當時場景: {', '.join(data['scenes'])}")
+            st.write("當時清單細節:")
+            st.write(data['items']) # 這裡會把當時的物品清單列出來！
