@@ -51,7 +51,7 @@ with st.sidebar:
 # ==========================================
 # 2. 主畫面：Wendy list.
 # ==========================================
-st.title("🐰 Wendy list 🦔")
+st.title(" Wendy list 🦔")
 dest_type = st.selectbox("目的地", ["國內", "國外"])
 selected_scenes = st.multiselect("選擇場景", list(st.session_state.ITEM_DATABASE[dest_type].keys()))
 
