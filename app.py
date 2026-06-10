@@ -33,8 +33,8 @@ if 'ITEM_DATABASE' not in st.session_state:
 # 1. 側邊欄：總編輯管理中心 (永遠存在)
 # ==========================================
 with st.sidebar:
-    st.title("🛠 總編輯設定")
-    with st.expander("➕ 新增樂樂小物"):
+    st.title("🛠 yaoyaoxwendy")
+    with st.expander("➕ 新增小物"):
         new_dest = st.selectbox("目的地", ["國內", "國外"])
         new_scene = st.text_input("場景名稱")
         new_item = st.text_input("物品名稱")
@@ -49,9 +49,9 @@ with st.sidebar:
                     st.rerun()
 
 # ==========================================
-# 2. 主畫面：樂樂時光機
+# 2. 主畫面：Wendy list
 # ==========================================
-st.title("🦔 樂樂時光機")
+st.title("🦔 Wendy list")
 dest_type = st.selectbox("目的地", ["國內", "國外"])
 selected_scenes = st.multiselect("選擇場景", list(st.session_state.ITEM_DATABASE[dest_type].keys()))
 
