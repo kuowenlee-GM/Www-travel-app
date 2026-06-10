@@ -57,7 +57,7 @@ selected_scenes = st.multiselect("選擇場景", list(st.session_state.ITEM_DATA
 
 checked_items = []
 for scene in selected_scenes:
-    st.subheader(f"⭐️ {scene}")
+    st.subheader(f"📍 {scene}")
     items = st.session_state.ITEM_DATABASE[dest_type].get(scene, [])
     for idx, item in enumerate(items):
         if st.checkbox(f"{item}", key=f"{dest_type}_{scene}_{idx}"):
@@ -91,52 +91,3 @@ for name, data in history.items():
             del st.session_state.ITEM_DATABASE["歷史紀錄"][name]
             save_data(st.session_state.ITEM_DATABASE)
             st.rerun()
-else:
-    st.title("🦔 樂樂時光機")
-
-dest_type = st.selectbox("選擇目的地", ["國內", "國外"])
-# 確保選擇場景時能讀取到正確的 keys
-scenes_available = list(st.session_state.ITEM_DATABASE.get(dest_type, {}).keys())
-selected_scenes = st.multiselect("選擇場景", scenes_available)
-
-checked_items = []
-for scene in selected_scenes:
-    st.subheader(f"⭐️ {scene}")
-    items = st.session_state.ITEM_DATABASE[dest_type].get(scene, [])
-    for idx, item in enumerate(items):
-        if st.checkbox(f"{item}", key=f"{dest_type}_{scene}_{item}_{idx}"):
-            checked_items.append(item)
-
-# --- 存檔與互動 ---
-st.divider()
-st.subheader("💾 旅程存檔")
-trip_name = st.text_input("幫這次旅程取個名字")
-if st.button("儲存此次打包清單"):
-    if trip_name and checked_items:
-        if "歷史紀錄" not in st.session_state.ITEM_DATABASE:
-            st.session_state.ITEM_DATABASE["歷史紀錄"] = {}
-        st.session_state.ITEM_DATABASE["歷史紀錄"][trip_name] = {
-            "scenes": selected_scenes,
-            "checked_items": checked_items
-        }
-        save_data(st.session_state.ITEM_DATABASE)
-        st.success("存檔成功！")
-        st.rerun()
-
-# --- 歷史紀錄 (加入格式檢查) ---
-st.subheader("📂 瀏覽歷史打包清單")
-history = st.session_state.ITEM_DATABASE.get("歷史紀錄", {})
-if isinstance(history, dict):
-    for name, data in history.items():
-        if isinstance(data, dict):  # 確保每一筆紀錄都是字典
-            with st.expander(f"📂 {name}"):
-                scenes_list = data.get('scenes', [])
-                st.write(f"**場景**: {', '.join(scenes_list) if isinstance(scenes_list, list) else '無'}")
-                items_list = data.get('checked_items', [])
-                if isinstance(items_list, list):
-                    for i in items_list:
-                        st.markdown(f"- ✅ {i}")
-                if st.button(f"🗑️ 刪除 {name}", key=f"del_{name}"):
-                    del st.session_state.ITEM_DATABASE["歷史紀錄"][name]
-                    save_data(st.session_state.ITEM_DATABASE)
-                    st.rerun()
