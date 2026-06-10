@@ -8,7 +8,7 @@ SECRET_PASSWORD = "Mylove123"
 
 st.set_page_config(page_title="樂樂時光機", page_icon="🦔")
 
-# --- 核心數據與狀態管理 ---
+# --- 數據處理 ---
 def load_data():
     default_data = {
         "國內": {"民宿": ["刷牙組", "睡衣", "室內拖鞋", "充電線", "延長線", "個人護膚品"]},
@@ -18,7 +18,8 @@ def load_data():
     if os.path.exists(DATA_FILE):
         try:
             with open(DATA_FILE, "r", encoding="utf-8") as f:
-                return json.load(f)
+                data = json.load(f)
+                return data if isinstance(data, dict) else default_data
         except: return default_data
     return default_data
 
@@ -57,14 +58,14 @@ with st.sidebar:
 # --- 主畫面 ---
 if st.session_state.auth_mode == 'Private':
     st.title("❤️ 專屬於我的小壞蛋之打包清單")
-    st.markdown("*> 「 親愛的，記得把對我的思念帶上，否則我會折磨妳的。 」*")
 else:
     st.title("🦔 樂樂時光機")
 
 dest_type = st.selectbox("選擇目的地", ["國內", "國外"])
-selected_scenes = st.multiselect("選擇場景", list(st.session_state.ITEM_DATABASE[dest_type].keys()))
+# 確保選擇場景時能讀取到正確的 keys
+scenes_available = list(st.session_state.ITEM_DATABASE.get(dest_type, {}).keys())
+selected_scenes = st.multiselect("選擇場景", scenes_available)
 
-# --- 打包區 (動態 Key 避免衝突) ---
 checked_items = []
 for scene in selected_scenes:
     st.subheader(f"📍 {scene}")
@@ -79,24 +80,30 @@ st.subheader("💾 旅程存檔")
 trip_name = st.text_input("幫這次旅程取個名字")
 if st.button("儲存此次打包清單"):
     if trip_name and checked_items:
+        if "歷史紀錄" not in st.session_state.ITEM_DATABASE:
+            st.session_state.ITEM_DATABASE["歷史紀錄"] = {}
         st.session_state.ITEM_DATABASE["歷史紀錄"][trip_name] = {
             "scenes": selected_scenes,
             "checked_items": checked_items
         }
         save_data(st.session_state.ITEM_DATABASE)
-        st.balloons() if st.session_state.auth_mode == 'Private' else st.success("存檔成功！")
+        st.success("存檔成功！")
         st.rerun()
-    else:
-        st.warning("請輸入名稱並勾選至少一項物品哦！")
 
-# --- 歷史紀錄 ---
+# --- 歷史紀錄 (加入格式檢查) ---
 st.subheader("📂 瀏覽歷史打包清單")
-for name, data in st.session_state.ITEM_DATABASE.get("歷史紀錄", {}).items():
-    with st.expander(f"📂 {name}"):
-        st.write(f"**場景**: {', '.join(data.get('scenes', []))}")
-        st.write("- " + "\n- ".join([f"✅ {i}" for i in data.get('checked_items', [])]))
-        if st.button(f"🗑️ 刪除 {name}", key=f"del_{name}"):
-            del st.session_state.ITEM_DATABASE["歷史紀錄"][name]
-            save_data(st.session_state.ITEM_DATABASE)
-            st.toast("紀錄已刪除")
-            st.rerun()
+history = st.session_state.ITEM_DATABASE.get("歷史紀錄", {})
+if isinstance(history, dict):
+    for name, data in history.items():
+        if isinstance(data, dict):  # 確保每一筆紀錄都是字典
+            with st.expander(f"📂 {name}"):
+                scenes_list = data.get('scenes', [])
+                st.write(f"**場景**: {', '.join(scenes_list) if isinstance(scenes_list, list) else '無'}")
+                items_list = data.get('checked_items', [])
+                if isinstance(items_list, list):
+                    for i in items_list:
+                        st.markdown(f"- ✅ {i}")
+                if st.button(f"🗑️ 刪除 {name}", key=f"del_{name}"):
+                    del st.session_state.ITEM_DATABASE["歷史紀錄"][name]
+                    save_data(st.session_state.ITEM_DATABASE)
+                    st.rerun()
