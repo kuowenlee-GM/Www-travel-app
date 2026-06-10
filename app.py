@@ -16,40 +16,19 @@ def load_data():
         try:
             with open(DATA_FILE, "r", encoding="utf-8") as f:
                 data = json.load(f)
-                return data if isinstance(data, dict) else default_data
+                # 確保資料結構完整
+                if not isinstance(data, dict): return default_data
+                if "歷史紀錄" not in data: data["歷史紀錄"] = {}
+                return data
         except: return default_data
     return default_data
 
 def save_data(data):
-    # 存檔前做一次清洗：移除重複
-    for dest in data:
-        if dest == "歷史紀錄": continue
-        for scene in data[dest]:
-            data[dest][scene] = list(dict.fromkeys(data[dest][scene]))
     with open(DATA_FILE, "w", encoding="utf-8") as f:
         json.dump(data, f, ensure_ascii=False, indent=4)
 
 if 'ITEM_DATABASE' not in st.session_state:
     st.session_state.ITEM_DATABASE = load_data()
-
-# --- 側邊欄：總編輯管理中心 ---
-with st.sidebar:
-    st.title("🛠 總編輯設定")
-    with st.expander("➕ 新增樂樂小物"):
-        new_dest = st.selectbox("目的地", ["國內", "國外"])
-        new_scene = st.text_input("場景名稱")
-        new_item = st.text_input("物品名稱")
-        if st.button("確認加入"):
-            if new_scene and new_item:
-                if new_scene not in st.session_state.ITEM_DATABASE[new_dest]:
-                    st.session_state.ITEM_DATABASE[new_dest][new_scene] = []
-                if new_item not in st.session_state.ITEM_DATABASE[new_dest][new_scene]:
-                    st.session_state.ITEM_DATABASE[new_dest][new_scene].append(new_item)
-                    save_data(st.session_state.ITEM_DATABASE)
-                    st.success(f"已加入: {new_item}")
-                    st.rerun()
-                else:
-                    st.warning("物品已存在！")
 
 # --- 主畫面：打包 ---
 st.title("🦔 樂樂時光機")
@@ -61,6 +40,7 @@ for scene in selected_scenes:
     st.subheader(f"📍 {scene}")
     items = st.session_state.ITEM_DATABASE[dest_type].get(scene, [])
     for idx, item in enumerate(items):
+        # 使用唯一Key
         if st.checkbox(f"{item}", key=f"{dest_type}_{scene}_{idx}"):
             checked_items.append(item)
 
@@ -79,21 +59,26 @@ if st.button("儲存此次打包清單"):
         st.success("存檔成功！")
         st.rerun()
 
-# --- 歷史查閱功能 (核心修復) ---
-if st.session_state.ITEM_DATABASE.get("歷史紀錄"):
-    st.divider()
-    st.subheader("📂 瀏覽歷史打包清單")
-    for name, data in st.session_state.ITEM_DATABASE["歷史紀錄"].items():
-        with st.expander(f"📂 {name}"):
-            scenes = data.get("scenes", [])
-            items = data.get("checked_items", [])
-            st.write(f"**當時場景**: {', '.join(scenes)}")
-            st.write("**帶出門的清單**:")
-            for item in items:
-                st.markdown(f"- ✅ {item}")
-        
-        # 刪除按鈕
-        if st.button(f"🗑️ 刪除 {name}", key=f"del_{name}"):
-            del st.session_state.ITEM_DATABASE["歷史紀錄"][name]
-            save_data(st.session_state.ITEM_DATABASE)
-            st.rerun()
+# --- 歷史查閱功能 (徹底修復版) ---
+st.divider()
+st.subheader("📂 瀏覽歷史打包清單")
+history = st.session_state.ITEM_DATABASE.get("歷史紀錄", {})
+
+if not history:
+    st.info("目前還沒有存檔紀錄唷！")
+else:
+    for name, data in history.items():
+        # 確保 data 是字典格式，避免崩潰
+        if isinstance(data, dict):
+            with st.expander(f"📂 {name}"):
+                scenes = data.get("scenes", [])
+                items = data.get("checked_items", [])
+                st.write(f"**當時場景**: {', '.join(scenes) if isinstance(scenes, list) else scenes}")
+                st.write("**帶出門的清單**:")
+                for item in items:
+                    st.markdown(f"- ✅ {item}")
+            
+            if st.button(f"🗑️ 刪除 {name}", key=f"del_{name}"):
+                del st.session_state.ITEM_DATABASE["歷史紀錄"][name]
+                save_data(st.session_state.ITEM_DATABASE)
+                st.rerun()
