@@ -73,38 +73,3 @@ for item in target_items:
 if st.button("準備出發 !"):
     st.success("檢查完畢，祝旅途愉快！老公已經準備好出發了！")
 
-# --- 3、主介面顯示 ---
-if st.session_state.auth_mode == 'Private':
-    st.title("🦔 樂樂時光機")
-    st.markdown("*「 親愛的，記得把對我的思念帶上。 」*")
-    
-    # 新增權限區
-    with st.expander("📝 總編輯管理面板"):
-        new_item = st.text_input("想給樂樂新增什麼寶貝？")
-        c1, c2 = st.columns(2)
-        dest = c1.selectbox("目的地", ["國內", "國外"])
-        scen = c2.selectbox("場景", ["民宿", "沙灘", "動物園/逛街", "爬山", "通用必備"])
-        if st.button("確認新增"):
-            if new_item:
-                st.session_state.ITEM_DATABASE[dest].setdefault(scen, []).append(new_item)
-                st.balloons() # 馬卡龍顏色氣球很慢飛起來！
-                st.success(f"成功新增 '{new_item}' 到 '{dest}-{scen}'！")
-else:
-    st.title("🦔 旅遊時光機")
-    st.markdown("請輸入密碼解鎖總編輯權限")
-
-# --- 4、清單邏輯與選擇 ---
-col1, col2 = st.columns(2)
-dest_type = col1.selectbox("選擇目的地", ["國內", "國外"])
-scene = col2.selectbox("選擇場景", list(st.session_state.ITEM_DATABASE[dest_type].keys()))
-
-target_items = st.session_state.ITEM_DATABASE[dest_type].get(scene, [])
-if dest_type == "國外" and scene != "通用必備":
-    target_items = st.session_state.ITEM_DATABASE["國外"]["通用必備"] + target_items
-
-st.subheader(f"✅ {dest_type} - {scene} 必備清單")
-for item in target_items:
-    st.checkbox(item)
-
-if st.button("準備出發 !"):
-    st.success("檢查完畢，祝旅途愉快 !")
