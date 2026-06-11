@@ -39,7 +39,7 @@ with st.sidebar:
         new_dest = st.selectbox("目的地", ["國內", "國外"])
         new_scene = st.text_input("場景名稱")
         new_item = st.text_input("物品名稱")
-        if st.button("確認加入"):
+                if st.button("確認加入"):
             if new_scene and new_item:
                 if new_scene not in st.session_state.ITEM_DATABASE[new_dest]:
                     st.session_state.ITEM_DATABASE[new_dest][new_scene] = []
