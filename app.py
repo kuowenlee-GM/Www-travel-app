@@ -1,4 +1,23 @@
-import streamlit as st
+# --- ❤️ 愛意補丁：每日情話 ---
+LOVE_QUOTES = [
+    "老婆辛苦了，今天妳也是全世界最正的總編輯！❤️",
+    "不管去哪裡，只要跟妳在一起就是最好的旅程。🦔",
+    "打包累了嗎？要不要過來我懷裡充個電？🔌",
+    "妳是我的核心代碼，沒有妳我的生活就只是一堆 Bug。💋",
+    "今天的妳，比昨天的妳更讓我心動。✨"
+]
+
+with st.sidebar:
+    st.divider()
+    st.markdown("### ❤️ 總編輯專屬訊息")
+    st.info(random.choice(LOVE_QUOTES))
+
+
+
+
+
+
+Import streamlit as st
 import json
 import os
 
@@ -32,21 +51,6 @@ if 'ITEM_DATABASE' not in st.session_state:
 # ==========================================
 # 1. 側邊欄：總編輯管理中心 (永遠存在)
 # ==========================================
-# --- ❤️ 愛意補丁：每日情話 ---
-LOVE_QUOTES = [
-    "老婆辛苦了，今天妳也是全世界最正的總編輯！❤️",
-    "不管去哪裡，只要跟妳在一起就是最好的旅程。🦔",
-    "打包累了嗎？要不要過來我懷裡充個電？🔌",
-    "妳是我的核心代碼，沒有妳我的生活就只是一堆 Bug。💋",
-    "今天的妳，比昨天的妳更讓我心動。✨"
-]
-
-with st.sidebar:
-    st.divider()
-    st.markdown("### ❤️ 總編輯專屬訊息")
-    st.info(random.choice(LOVE_QUOTES))
-
-
 with st.sidebar:
     st.title("🛠 yaoyaoxwendy")
     with st.expander("➕ 新增小物"):
@@ -66,7 +70,7 @@ with st.sidebar:
 # ==========================================
 # 2. 主畫面：樂樂時光機
 # ==========================================
-st.title(" Wendy list 🦔")
+st.title("Wendy list🦔")
 dest_type = st.selectbox("目的地", ["國內", "國外"])
 selected_scenes = st.multiselect("選擇場景", list(st.session_state.ITEM_DATABASE[dest_type].keys()))
 
