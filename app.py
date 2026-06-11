@@ -52,10 +52,6 @@ with st.sidebar:
 # 2. 主畫面：Wendy list.
 # ==========================================
 st.title(" Wendy list 🦔")
-total_items = len(checked_items) + (len(st.session_state.ITEM_DATA 
-progress = len(checked_items) / total items if total_items > 0 elst 
-st.progress (progress, text=f"準備進度： {int (progress*100)｝%")
-
         dest_type = st.selectbox("目的地", ["國內", "國外"])
 selected_scenes = st.multiselect("選擇場景", list(st.session_state.ITEM_DATABASE[dest_type].keys()))
 
