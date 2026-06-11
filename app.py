@@ -43,12 +43,6 @@ with st.sidebar:
             if new_scene and new_item:
                 if new_scene not in st.session_state.ITEM_DATABASE[new_dest]:
                     st.session_state.ITEM_DATABASE[new_dest][new_scene] = []
-                                           if new_scene and new_item:
-                if new_scene not in st.session_state.ITEM_DATABASE[new_dest]:
-                    st.session_state.ITEM_DATABASE[new_dest][new_scene] = []
-                                     if new_scene and new_item:
-                if new_scene not in st.session_state.ITEM_DATABASE[new_dest]:
-                    st.session_state.ITEM_DATABASE[new_dest][new_scene] = []
                 
                 if new_item not in st.session_state.ITEM_DATABASE[new_dest][new_scene]:
                     st.session_state.ITEM_DATABASE[new_dest][new_scene].append(new_item)
@@ -56,6 +50,8 @@ with st.sidebar:
                     st.balloons()
                     st.success(f"已加入: {new_item} 🎈")
                     st.rerun()
+    
+
 
 
 # --- ❤️ 愛意補丁：每日情話 ---
