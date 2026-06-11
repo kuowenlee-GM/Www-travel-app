@@ -43,11 +43,16 @@ with st.sidebar:
             if new_scene and new_item:
                 if new_scene not in st.session_state.ITEM_DATABASE[new_dest]:
                     st.session_state.ITEM_DATABASE[new_dest][new_scene] = []
-                if new_item not in st.session_state.ITEM_DATABASE[new_dest][new_scene]:
+                               if new_item not in st.session_state.ITEM_DATABASE[new_dest][new_scene]:
                     st.session_state.ITEM_DATABASE[new_dest][new_scene].append(new_item)
                     save_data(st.session_state.ITEM_DATABASE)
-                    st.success(f"已加入: {new_item}")
+                    
+                    # 這裡就是我們放彩蛋的地方！
+                    st.balloons() 
+                    st.success(f"已加入: {new_item} 🎈")
+                    
                     st.rerun()
+
 # --- ❤️ 愛意補丁：每日情話 ---
 LOVE_QUOTES = [
     "老婆辛苦了，今天妳也是全世界最正的總編輯！❤️",
