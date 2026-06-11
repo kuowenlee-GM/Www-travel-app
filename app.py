@@ -1,25 +1,8 @@
-# --- ❤️ 愛意補丁：每日情話 ---
-LOVE_QUOTES = [
-    "老婆辛苦了，今天妳也是全世界最正的總編輯！❤️",
-    "不管去哪裡，只要跟妳在一起就是最好的旅程。🦔",
-    "打包累了嗎？要不要過來我懷裡充個電？🔌",
-    "妳是我的核心代碼，沒有妳我的生活就只是一堆 Bug。💋",
-    "今天的妳，比昨天的妳更讓我心動。✨"
-]
-
-with st.sidebar:
-    st.divider()
-    st.markdown("### ❤️ 總編輯專屬訊息")
-    st.info(random.choice(LOVE_QUOTES))
-
-
-
-
-
 
 Import streamlit as st
 import json
 import os
+import random
 
 DATA_FILE = "lele_storage.json"
 
@@ -66,6 +49,19 @@ with st.sidebar:
                     save_data(st.session_state.ITEM_DATABASE)
                     st.success(f"已加入: {new_item}")
                     st.rerun()
+# --- ❤️ 愛意補丁：每日情話 ---
+LOVE_QUOTES = [
+    "老婆辛苦了，今天妳也是全世界最正的總編輯！❤️",
+    "不管去哪裡，只要跟妳在一起就是最好的旅程。🦔",
+    "打包累了嗎？要不要過來我懷裡充個電？🔌",
+    "妳是我的核心代碼，沒有妳我的生活就只是一堆 Bug。💋",
+    "今天的妳，比昨天的妳更讓我心動。✨"
+]
+
+with st.sidebar:
+    st.divider()
+    st.markdown("### ❤️ 總編輯專屬訊息")
+    st.info(random.choice(LOVE_QUOTES))
 
 # ==========================================
 # 2. 主畫面：樂樂時光機
