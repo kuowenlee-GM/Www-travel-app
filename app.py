@@ -40,17 +40,12 @@ with st.sidebar:
         new_scene = st.text_input("場景名稱")
         new_item = st.text_input("物品名稱")     
             if new_scene and new_item:
-                if new_scene not in st.session_state.ITEM_DATABASE[new_dest]:
-                    st.session_state.ITEM_DATABASE[new_dest][new_scene] = []
-                
-                if new_item not in st.session_state.ITEM_DATABASE[new_dest][new_scene]:
+                            if new_item not in st.session_state.ITEM_DATABASE[new_dest][new_scene]:
                     st.session_state.ITEM_DATABASE[new_dest][new_scene].append(new_item)
                     save_data(st.session_state.ITEM_DATABASE)
-                    
-            
-                    st.balloons()
+                    st.balloons() 
                     st.success(f"已加入: {new_item} 🎈")
-                    st.rerun() # 一定要放在這，最後才執行
+                    st.rerun()
 
 
 # --- ❤️ 愛意補丁：每日情話 ---
